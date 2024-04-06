@@ -103,7 +103,8 @@ def compute_final_path(final_reached_loc):
         prev_loc = loc
         result.write(frame)
     cv2.circle(frame,(goal_pos[0],goal_pos[1]),GOAL_RADIUS,(255,165,0),10)
-    result.write(frame)
+    for i in range(100):
+        result.write(frame)
 
 # Initializing start and goal positions using user input
 def initialize_start_and_goal_pos():
