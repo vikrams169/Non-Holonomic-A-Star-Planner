@@ -13,7 +13,6 @@ import copy
 # Size of the grid and dimensions of the grid block
 map_size = [6000,2000]
 CLEARANCE = 10
-# ROBOT_RADIUS = 220
 ROBOT_RADIUS = 220
 WHEEL_RADIUS = 33
 WHEEL_SEPARATION = 287
