@@ -68,9 +68,9 @@ After the program accepts your start and goal locations, it will start computing
 
 ### Simulation Video
 
-The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://youtu.be/oCmQ83_IZCs).
+The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://youtu.be/KWaNTzZl9pc).
 
-[![Video](https://img.youtube.com/vi/oCmQ83_IZCs/maxresdefault.jpg)](https://youtu.be/oCmQ83_IZCs)
+[![Video](https://img.youtube.com/vi/KWaNTzZl9pc/maxresdefault.jpg)](https://youtu.be/KWaNTzZl9pc)
 
 
 ## Part 2
@@ -89,9 +89,9 @@ This package is tested to run in a ROS 2 Galactic setup on Ubuntu 20.04. Please 
     
 ```
 
-### Executing the Package
+### Building the Package
 
-To launch the environment, execute the following commands.
+To build the package, execute.
 ```sh
     # Navigate to the src directory of your ROS 2 workspace
     cd ros2_ws/src/
@@ -99,24 +99,33 @@ To launch the environment, execute the following commands.
     git clone https://github.com/vikrams169/Non-Holonomic-A-Star-Planner/tree/main/Part2/turtlebot3_project3
     # Navigate back to the ROS 2 workspace
     cd ..
+    # Install all dependencies
+    rosdep install --from-paths src -y --ignore-src
     # Build the package and source the setup file
     colcon build && source install/setup.bash
-    # Run the launch file to start the sample trajectory
+```
+To launch the environment, execute the following commands.
+```sh
+    # Navigate to the src directory of your ROS 2 workspace
+    cd ros2_ws
+    # Source the workspace
+    source install/setup.bash
+    # Run the launch file to start the gazebo environment
     ros2 launch turtlebot3_project3 competition_world.launch.py
-    # Run the launch file to start the sample trajectory
 ```
 To run a sample trajectory, execute the following commands.
 ```sh
     # Navigate to the src directory of your ROS 2 workspace
-    cd ros2_ws/src/
-    # Clone/download the package to this destination
-    git clone https://github.com/vikrams169/Non-Holonomic-A-Star-Planner/tree/main/Part2/turtlebot3_project3
-    # Navigate back to the ROS 2 workspace
-    cd ..
-    # Build the package and source the setup file
-    colcon build && source install/setup.bash
-    # Run the launch file to start the sample trajectory
+    cd ros2_ws
+    # Source the workspace
+    source install/setup.bash
+    # Run the file to start the sample trajectory
     ros2 run turtlebot3_project3 a_star.py
-    # Run the launch file to start the sample trajectory
 ```
+
+### Simulation Video
+
+The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://youtu.be/oCmQ83_IZCs).
+
+[![Video](https://img.youtube.com/vi/oCmQ83_IZCs/maxresdefault.jpg)](https://youtu.be/oCmQ83_IZCs)
 
