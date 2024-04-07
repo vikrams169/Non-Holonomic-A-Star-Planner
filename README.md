@@ -18,7 +18,7 @@ Link to the GitHub Repository can be found [here](https://github.com/vikrams169/
 ## Part 1
 
 ### Overview
-On giving start and goal location coordinates, the path planner computes the shortest path using the A* Algorithm while avoiding obstacles (with a clearance of a used-specified input).
+On giving start and goal location coordinates, the path planner computes the shortest path using the A* Algorithm while avoiding obstacles (with a clearance of a used-specified input) in grid-world.
 
 On finding the final path, the planner makes a video with intermediate frames and displays it as a pop-up animation.
 
@@ -65,3 +65,48 @@ A sample set of start and goal positions (in the format [x,y,theta] and [x,y] re
 </ul>
 
 After the program accepts your start and goal locations, it will start computing the path. Ater computing the final path, it will generate and display a video `a_star.mp4`from the saved frames and delete all the individual frames themselves. The total time taken to run the A* Algorithm will be displayed to the terminal as well.
+
+### Simulation Video
+
+The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://www.youtube.com/watch?v=Eoj4YyOxvfU).
+
+[![Video](https://i3.ytimg.com/vi/6D_xVzv4fGo/maxresdefault.jpg)](https://www.youtube.com/watch?v=6D_xVzv4fGo)
+
+
+## Part 2
+
+### Overview
+
+The second part of the project replicates the A* algorithm devised in Part 1 in a Gazebo simulation environment using ROS 2. By saving the RPM inputs to each wheel at each timestep of the optimal path, an appropriate conversion to the linear and angular velocity input to the non-holonoimic differential-drive Turtlebot 3 Waffle-Pi robot is given to enable the robot to follow the same trajectory in the same map in Gazebo (scaled by 1mm/pixel).
+
+### Dependencies
+
+This package is tested to run in a ROS 2 Galactic setup on Ubuntu 20.04. Please prefer this environment specification before proceeding. In addition, a couple more dependencies needed to run the package can be installed using the commands below.
+
+```sh
+    
+```
+
+### Executing the Package
+
+To run a sample trajectory, execute the following commands.
+```sh
+    # Navigate to the src directory of your ROS 2 workspace
+    cd ros2_ws/src/
+    # Clone/download the package to this destination
+    git clone https://github.com/vikrams169/Non-Holonomic-A-Star-Planner/tree/main/Part2/turtlebot3_project3
+    # Navigate back to the ROS 2 workspace
+    cd ..
+    # Build the package and source the setup file
+    colcon build && source install/setup.bash
+    # Run the launch file to start the sample trajectory
+    roslaunch turtlebot3_project3 ...
+```
+
+### Simulation Video
+
+The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://www.youtube.com/watch?v=Eoj4YyOxvfU).
+
+[![Video](https://i3.ytimg.com/vi/6D_xVzv4fGo/maxresdefault.jpg)](https://www.youtube.com/watch?v=6D_xVzv4fGo)
+
+
