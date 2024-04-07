@@ -19,21 +19,25 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 
 # Size of the grid and dimensions of the grid block
 map_size = [6000,2000]
-CLEARANCE = 10
+
 ROBOT_RADIUS = 220
 WHEEL_RADIUS = 33
 WHEEL_SEPARATION = 287
-RPM1 = 30
-RPM2 = 60
+
 GOAL_RADIUS = ROBOT_RADIUS//2
-ACTIONS = [[0,RPM1],[0,RPM2],[RPM1,0],[RPM2,0],[RPM1,RPM1],[RPM2,RPM2],[RPM1,RPM2],[RPM2,RPM1]]
+
 ACTION_COSTS = [0,0,0,0,0,0,0,0]
-dt_timestep = 0.5
-dt_sample = 0.25
+dt_timestep = 1
+dt_sample = 0.2
 
 #Initialising variables for map and frame
 frame = np.full([map_size[1],map_size[0],3],(0,255,0)).astype(np.uint8)
 obstacle_frame = np.full([map_size[1],map_size[0],3], (0,255,0)).astype(np.uint8)
+#Size for output video frames
+size = (map_size[0], map_size[1])
+result = cv2.VideoWriter('a_star.mp4',
+                         cv2.VideoWriter_fourcc(*'MP4V'),
+                         20, size)
 
 min_heap = [] # Min-heap to store nodes initialized as a list
 heapify(min_heap) # Making the min-heap list into a heap using the heapq library
@@ -56,6 +60,7 @@ def in_obstacle(loc):
 
 # Returning whether a current grid cell is the goal or not
 def reached_goal(loc):
+    global GOAL_RADIUS
     if ((goal_pos[0]-loc[0])**2 + (goal_pos[1]-loc[1])**2)**0.5 <= GOAL_RADIUS:
         return True
     else:
@@ -63,7 +68,7 @@ def reached_goal(loc):
 
 # Backtracking to find the path between the start and goal locations
 def compute_final_path(final_reached_loc):
-    global frame, velocity_nodes
+    global frame, velocity_nodes, distance_threshold, angular_threshold
     path_nodes = [final_reached_loc[0:3]]
     velocity_nodes.append(final_reached_loc[3:5])
     while not np.array_equal(path_nodes[-1][:2],start_pos[:2]):
@@ -85,18 +90,31 @@ def compute_final_path(final_reached_loc):
                                         int(parent_loc[2]%360/angular_threshold),5]))
     path_nodes.reverse()
     velocity_nodes.reverse()
+    prev_loc = path_nodes[0]
+    cv2.circle(frame, [prev_loc[0],prev_loc[1]],2,(0,0,255),-1) 
+    for loc in path_nodes[1:]:
+        frame = cv2.arrowedLine(frame,(prev_loc[0],prev_loc[1]),(loc[0],loc[1]),(0,0,255),10) 
+        cv2.circle(frame,[loc[0],loc[1]],2,(0,0,255),-1) 
+        prev_loc = loc
+        result.write(frame)
+    cv2.circle(frame,(goal_pos[0],goal_pos[1]),GOAL_RADIUS,(255,165,0),10)
+    for i in range(100):
+        result.write(frame)
 
 # Initializing start and goal positions using user input
 def initialize_start_and_goal_pos():
     global start_pos, goal_pos
-    print("Please enter the goal positions (in the coordinate system with the origin at the bottom left corner) starting from index 0")
-    print("Make sure to to add locations within the 6000mm*2000mm grid map avoiding obstacles accounting for a 5mm clearance")
+    print("Please enter the start and goal positions (in the coordinate system with the origin at the bottom left corner) starting from index 0")
+    print("Make sure to to add locations within the 6000mm*2000mm grid map avoiding obstacles accounting for a 25mm clearance")
     while(start_pos is None or goal_pos is None):
         start_x = 500
         start_y = 1000
         start_theta = 0
         goal_x = int(input("Enter the X coordinate of the goal position: ") or 5750)
         goal_y = map_size[1] - int(input("Enter the Y coordinate of the goal position: ") or 1000)
+        if start_x < 0 or start_x >= map_size[0] or start_y < 0 or start_y >= map_size[1] or in_obstacle((start_x,start_y,start_theta)):
+            print("Try again with a valid set of values")
+            continue
         if goal_x < 0 or goal_x >= map_size[0] or goal_y < 0 or goal_y >= map_size[1] or in_obstacle((goal_x,goal_y)):
             print("Try again with a valid set of values")
             continue
@@ -110,6 +128,7 @@ def initialize_start_and_goal_pos():
 def set_obstacles(frame):
     #Half planes
     #Clear area
+    frame = np.full([map_size[1],map_size[0],3],(0,255,0)).astype(np.uint8)
     frame[CLEARANCE:map_size[1]-CLEARANCE, CLEARANCE:map_size[0]-CLEARANCE] = [255,255,255]
     #Rectangle clearance
     frame[0:1000+CLEARANCE, 1500-CLEARANCE:1500+250+CLEARANCE] = [0,255,0]
@@ -132,15 +151,31 @@ def set_obstacles(frame):
 
 # Initializing the map with obstacles in PyGame
 def initialize_map():
-    global obstacle_frame, frame, CLEARANCE, ROBOT_RADIUS, test_frame
+    global obstacle_frame, frame, CLEARANCE, ROBOT_RADIUS
     frame = set_obstacles(frame)
     # #Radius of robot
     CLEARANCE = CLEARANCE + ROBOT_RADIUS
     obstacle_frame = set_obstacles(obstacle_frame)
 
+# Visualise the output video generated
+def visualise():
+    cap = cv2.VideoCapture('a_star.mp4')
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("Exiting, end of the video")
+            break
+        cv2.imshow('A star Visualisation', cv2.resize(frame,(1200,400)))
+        time.sleep(0.01)
+        if cv2.waitKey(1) == ord('q'):
+            break
+    time.sleep(2)
+    cap.release()
+    cv2.destroyAllWindows()
+
 # Visualizing the possible action by drawing the spline in the frame and observing the cost of that action
 def action_step(parent_loc,u_l,u_r,action_number):
-    global ACTION_COSTS, frame
+    global ACTION_COSTS, frame, WHEEL_RADIUS, WHEEL_SEPARATION, dt_sample, dt_timestep
     num_timesteps = int(dt_timestep/dt_sample)
     x, y, theta, linear, angular = parent_loc
     parent_theta = theta
@@ -163,13 +198,14 @@ def action_step(parent_loc,u_l,u_r,action_number):
         x, y, theta = x_new, y_new, theta_new
     
     #Velocity calculation
-    linear_vel = (u_l + u_r)*WHEEL_RADIUS/2 
-    angular_vel = np.deg2rad((theta-parent_theta))/dt_timestep
+    linear_vel = (WHEEL_RADIUS/2)*(u_l+u_r)
+    # angular_vel = np.deg2rad((theta-parent_theta))/dt_timestep
+    angular_vel = (WHEEL_RADIUS/WHEEL_SEPARATION)*(u_r-u_l)
 
     if complete_path:
         ACTION_COSTS[action_number] = spline_length
-    x, y, theta = int(x), int(y), int(theta)
 
+    x, y, theta = int(x), int(y), int(theta)
     if node_info[int(x/distance_threshold), int(y/distance_threshold), int(theta%360/angular_threshold),0] == 1:
         return -1
     else:
@@ -186,7 +222,7 @@ def add_node_to_heap(parent_loc,new_loc,action):
 
 # Adding all the neighbors of the current node to the min-heap
 def add_neighbors(loc):
-    global frame
+    global frame, ACTIONS
     i = 0
     for action in ACTIONS:
         u_l = (action[0]*2*np.pi)/60
@@ -198,7 +234,7 @@ def add_neighbors(loc):
 
 # Processing the current node that was returned by popping the min-heap
 def process_node(node):
-    global node_info, solved, iteration, frame
+    global node_info, solved, iteration, frame, distance_threshold, angular_threshold
     dist, loc, parent_loc, action = node
     #if visited
     if node_info[int(loc[0]/distance_threshold),
@@ -246,10 +282,13 @@ def process_node(node):
         solved = True
         compute_final_path(loc)
     add_neighbors(loc)
+    iteration += 1
+    if iteration%500 == 0:
+        result.write(frame)
 
 # Wrapper function for the A* Algorithm
 def a_star():
-    global min_heap, solved
+    global min_heap, solved, start_pos, goal_pos
     starting_dist = ((goal_pos[0]-start_pos[0])**2 + (goal_pos[1]-start_pos[1])**2)**0.5
     heappush(min_heap,(starting_dist,list(start_pos),list(start_pos),-1))
     while not solved:
@@ -268,7 +307,7 @@ class RobotControlNode(Node):
 
     def drive_robot(self):
         velocity_message = Twist()
-        global velocity_nodes
+        global velocity_nodes, dt_timestep
         for velocity in velocity_nodes:
             velocity_message.linear.x = velocity[0]/1000
             velocity_message.angular.z = velocity[1]
@@ -279,19 +318,19 @@ class RobotControlNode(Node):
         self.cmd_vel_pub.publish(velocity_message)
 
 def main(args=None):
-    global node_states, start_pos, goal_pos, CLEARANCE, RPM1, RPM2, angular_threshold, distance_threshold, node_info
+    global start_pos, goal_pos, CLEARANCE, RPM1, RPM2, ACTIONS, angular_threshold, distance_threshold, node_info
 
     rclpy.init(args=args)
     node = RobotControlNode()
     # Taking the clearnace as a user-input
-    CLEARANCE = int(input("Enter the clearance/bloating value for the obstales and walls: ") or 10)
-
+    CLEARANCE = 25
     # Initializing the map with obstacles
     initialize_map()
-
     # Taking the wheel RPMs as a user-input
-    RPM1 = int(input("Enter the first possible non-zero wheel RPM value: "))
-    RPM2 = int(input("Enter the second possible non-zero wheel RPM value: "))
+    RPM1 = 50
+    RPM2 = 100
+
+    ACTIONS = [[0,RPM1],[0,RPM2],[RPM1,0],[RPM2,0],[RPM1,RPM1],[RPM2,RPM2],[RPM1,RPM2],[RPM2,RPM1]]
 
     # Defining the distance threshold as a function of the user-given RPM values
     angular_threshold = 30
@@ -308,7 +347,6 @@ def main(args=None):
     Index 4: Total cost (C2C + C2G)
     Index 5: CTC
     '''
-
     node_info = -1*np.ones((int(map_size[0]/distance_threshold),
                             int(map_size[1]/distance_threshold),
                             int(360/angular_threshold),
@@ -325,10 +363,14 @@ def main(args=None):
 
     print("\nSuccess! Found the Optimal Path\n")
     print("\nTime taken for the pathfinding process using the A* Algorithm: ",end_time-start_time," seconds\n")
+    print("\nPlaying the video animation of the path computation\n")
+    result.release()
+    visualise()
+
     print("\nDriving the robot in gazebo\n")
     node.drive_robot()
+
     cv2.destroyAllWindows()
-    rclpy.shutdown()
 
 if __name__ == "__main__":
     main()

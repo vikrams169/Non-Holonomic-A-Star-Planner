@@ -68,9 +68,9 @@ After the program accepts your start and goal locations, it will start computing
 
 ### Simulation Video
 
-The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://www.youtube.com/watch?v=Eoj4YyOxvfU).
+The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://youtu.be/oCmQ83_IZCs).
 
-[![Video](https://i3.ytimg.com/vi/6D_xVzv4fGo/maxresdefault.jpg)](https://www.youtube.com/watch?v=6D_xVzv4fGo)
+[![Video](https://img.youtube.com/vi/oCmQ83_IZCs/maxresdefault.jpg)](https://youtu.be/oCmQ83_IZCs)
 
 
 ## Part 2
@@ -84,11 +84,27 @@ The second part of the project replicates the A* algorithm devised in Part 1 in 
 This package is tested to run in a ROS 2 Galactic setup on Ubuntu 20.04. Please prefer this environment specification before proceeding. In addition, a couple more dependencies needed to run the package can be installed using the commands below.
 
 ```sh
+    pip3 install numpy
+    pip3 install opencv-python
     
 ```
 
 ### Executing the Package
 
+To launch the environment, execute the following commands.
+```sh
+    # Navigate to the src directory of your ROS 2 workspace
+    cd ros2_ws/src/
+    # Clone/download the package to this destination
+    git clone https://github.com/vikrams169/Non-Holonomic-A-Star-Planner/tree/main/Part2/turtlebot3_project3
+    # Navigate back to the ROS 2 workspace
+    cd ..
+    # Build the package and source the setup file
+    colcon build && source install/setup.bash
+    # Run the launch file to start the sample trajectory
+    ros2 launch turtlebot3_project3 competition_world.launch.py
+    # Run the launch file to start the sample trajectory
+```
 To run a sample trajectory, execute the following commands.
 ```sh
     # Navigate to the src directory of your ROS 2 workspace
@@ -100,13 +116,7 @@ To run a sample trajectory, execute the following commands.
     # Build the package and source the setup file
     colcon build && source install/setup.bash
     # Run the launch file to start the sample trajectory
-    roslaunch turtlebot3_project3 ...
+    ros2 run turtlebot3_project3 a_star.py
+    # Run the launch file to start the sample trajectory
 ```
-
-### Simulation Video
-
-The YouTube link to a sample simulation video of this project is embedded below. The link to the same can also be found [here](https://www.youtube.com/watch?v=Eoj4YyOxvfU).
-
-[![Video](https://i3.ytimg.com/vi/6D_xVzv4fGo/maxresdefault.jpg)](https://www.youtube.com/watch?v=6D_xVzv4fGo)
-
 
