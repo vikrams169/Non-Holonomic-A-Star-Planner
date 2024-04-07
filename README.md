@@ -113,7 +113,7 @@ To launch the environment, execute the following commands.
     # Run the launch file to start the gazebo environment
     ros2 launch turtlebot3_project3 competition_world.launch.py
 ```
-To run a sample trajectory, execute the following commands.
+To run a sample trajectory, execute the following commands. You will also be prompted to input only the goal node position (in a way similar to part 1). The start position and other parameters are fixed. A sample goal position is (5750,1000) i.e. the same coordinates used in Part 1.
 ```sh
     # Navigate to the src directory of your ROS 2 workspace
     cd ros2_ws
