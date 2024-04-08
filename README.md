@@ -1,19 +1,5 @@
 # Non-Holonomic-A-Star-Planner
-An implementation of the A* Algorithm to plan optimal paths between a known starting and goal position in an obstacle-ridden 6000*2000 grid world.
-
-Link to the GitHub Repository can be found [here](https://github.com/vikrams169/Non-Holonomic-A-Star-Planner).
-
-## Authors
-<b>Vikram Setty</b>
-<ul>
-<li> UID: 119696897
-<li> Directory ID: vikrams
-</ul>
-<b>Vinay Lanka</b>
-<ul>
-<li> UID: 12041665
-<li> Directory ID: vlanka
-</ul>
+An implementation of the A* Algorithm to plan optimal paths between a known starting and goal position in an obstacle-ridden 6000*2000 pixel grid world.
 
 ## Part 1
 
